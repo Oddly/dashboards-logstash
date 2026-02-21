@@ -1,0 +1,1768 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "graphTooltip": 1,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "logstash"
+      ],
+      "targetBlank": false,
+      "title": "LS Dashboards",
+      "tooltip": "Navigate to other Logstash dashboards",
+      "type": "dashboards"
+    },
+    {
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "title": "\u2190 Back to Overview",
+      "tooltip": "Return to LS Service Overview",
+      "type": "link",
+      "url": "/d/ls-service-overview"
+    }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "panels": [],
+      "title": "Pipeline Overview",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.flow.input_throughput.current",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Input Throughput",
+      "type": "timeseries",
+      "description": "Events received per second per pipeline. Uses pre-computed flow rates that handle restarts gracefully."
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.flow.output_throughput.current",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Output Throughput",
+      "type": "timeseries",
+      "description": "Events emitted per second per pipeline. Uses pre-computed flow rates that handle restarts gracefully."
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.flow.filter_throughput.current",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Filter Throughput",
+      "type": "timeseries",
+      "description": "Events processed through filters per second per pipeline. Uses pre-computed flow rates that handle restarts gracefully."
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 200,
+      "panels": [],
+      "title": "Queue",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 10
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.queues.events",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Queue Events",
+      "type": "timeseries",
+      "description": "Number of events waiting in each pipeline's queue.\n\nRequires: Logstash Integration \u2192 'Logstash Pipeline Metrics' collection enabled in Fleet/Kibana."
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 10
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "Size {{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.queues.current_size.bytes",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "Max {{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.queues.max_size.bytes",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "B",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Queue Size",
+      "type": "timeseries",
+      "description": "Current queue size compared to maximum configured size per pipeline.\n\nRequires: Logstash Integration \u2192 'Logstash Pipeline Metrics' collection enabled in Fleet/Kibana."
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 10
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.time.queue_push_duration.ms",
+              "hide": true,
+              "id": "1",
+              "type": "avg"
+            },
+            {
+              "field": "logstash.pipeline.total.events.in",
+              "hide": true,
+              "id": "3",
+              "type": "avg"
+            },
+            {
+              "hide": true,
+              "id": "2",
+              "pipelineAgg": "1",
+              "settings": {
+                "unit": "1s"
+              },
+              "type": "derivative"
+            },
+            {
+              "hide": true,
+              "id": "5",
+              "pipelineAgg": "3",
+              "settings": {
+                "unit": "1s"
+              },
+              "type": "derivative"
+            },
+            {
+              "id": "6",
+              "pipelineVariables": [
+                {
+                  "name": "time",
+                  "pipelineAgg": "2"
+                },
+                {
+                  "name": "count",
+                  "pipelineAgg": "5"
+                }
+              ],
+              "settings": {
+                "script": "params.count > 0 ? params.time / params.count : 0"
+              },
+              "type": "bucket_script"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Queue Push Latency",
+      "type": "timeseries",
+      "description": "Average time per event waiting to enter the queue. Rising values indicate queue contention."
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 300,
+      "panels": [],
+      "title": "Workers",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Percentage of worker thread capacity in use per pipeline. Uses pre-computed flow metric.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      },
+      "id": 20,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.flow.worker_utilization.current",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Worker Utilization",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      },
+      "id": 21,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.flow.worker_concurrency.current",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Worker Concurrency",
+      "type": "timeseries",
+      "description": "Average number of workers actively processing events per pipeline. A value of 1.5 means on average 1.5 workers are busy."
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 401,
+      "panels": [],
+      "title": "Pipeline Reloads",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      },
+      "id": 402,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.reloads.successes",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Reload OK",
+      "type": "timeseries",
+      "description": "Cumulative count of successful pipeline reloads.\n\nRequires: Logstash Integration \u2192 'Logstash Pipeline Metrics' collection enabled in Fleet/Kibana."
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              },
+              {
+                "color": "#EE6677",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 28
+      },
+      "id": 403,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.reloads.failures",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Reload Fail",
+      "type": "timeseries",
+      "description": "Cumulative count of failed pipeline reloads.\n\nRequires: Logstash Integration \u2192 'Logstash Pipeline Metrics' collection enabled in Fleet/Kibana."
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "id": 406,
+      "title": "Pipeline Config",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "insertNulls": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 37
+      },
+      "id": 407,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "4",
+              "type": "terms",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "20"
+              }
+            },
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              }
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.info.workers",
+              "hide": false,
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Workers / Pipeline",
+      "type": "timeseries",
+      "description": "Number of workers configured per pipeline.\n\nRequires: Logstash Integration \u2192 'Logstash Pipeline Metrics' collection enabled in Fleet/Kibana."
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "insertNulls": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 37
+      },
+      "id": 408,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "4",
+              "type": "terms",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "20"
+              }
+            },
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              }
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.info.batch_size",
+              "hide": false,
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Batch Size / Pipeline",
+      "type": "timeseries",
+      "description": "Batch size configured per pipeline.\n\nRequires: Logstash Integration \u2192 'Logstash Pipeline Metrics' collection enabled in Fleet/Kibana."
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "logstash"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "elasticsearch",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allValue": "",
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "datasource": {
+          "type": "elasticsearch",
+          "uid": "${datasource}"
+        },
+        "definition": "{\"find\": \"terms\", \"field\": \"host.name\", \"query\": \"data_stream.dataset: logstash.*\"}",
+        "description": "Filter metrics by Logstash node",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Node",
+        "multi": false,
+        "name": "ls_node",
+        "options": [],
+        "query": "{\"find\": \"terms\", \"field\": \"host.name\", \"query\": \"data_stream.dataset: logstash.*\"}",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": "",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "elasticsearch",
+          "uid": "${datasource}"
+        },
+        "definition": "{\"find\": \"terms\", \"field\": \"logstash.pipeline.name\", \"query\": \"data_stream.dataset: logstash.pipeline\"}",
+        "description": "Filter metrics by Logstash pipeline",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Pipeline",
+        "multi": true,
+        "name": "ls_pipeline",
+        "options": [],
+        "query": "{\"find\": \"terms\", \"field\": \"logstash.pipeline.name\", \"query\": \"data_stream.dataset: logstash.pipeline\"}",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": true,
+        "auto_count": 100,
+        "auto_min": "10s",
+        "current": {
+          "selected": false,
+          "text": "auto",
+          "value": "$__auto_interval_interval"
+        },
+        "hide": 2,
+        "label": "Interval",
+        "name": "interval",
+        "options": [
+          {
+            "selected": false,
+            "text": "10s",
+            "value": "10s"
+          },
+          {
+            "selected": false,
+            "text": "30s",
+            "value": "30s"
+          },
+          {
+            "selected": false,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": false,
+            "text": "5m",
+            "value": "5m"
+          }
+        ],
+        "query": "10s,30s,1m,5m",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "type": "interval"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "LS-01 Pipeline Metrics",
+  "uid": "ls-pipeline-metrics",
+  "description": "Logstash pipeline performance: per-pipeline event rates, filter throughput, and output metrics.",
+  "__inputs": [
+    {
+      "name": "DS_DATASOURCE",
+      "label": "Data Source",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "elasticsearch",
+      "pluginName": "Elasticsearch"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "12.3.2"
+    }
+  ]
+}

@@ -1,0 +1,2530 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Pipeline tuning guidelines for optimizing Logstash throughput. Start with System Health to ensure adequate CPU and memory before adjusting pipeline settings. Suggestions are guidelines based on current metrics, not definitive values.",
+  "graphTooltip": 1,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "logstash"
+      ],
+      "targetBlank": false,
+      "title": "LS Dashboards",
+      "tooltip": "",
+      "type": "dashboards"
+    },
+    {
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "title": "Overview",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/ls-service-overview"
+    },
+    {
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "title": "Pipelines",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/ls-pipeline-metrics"
+    },
+    {
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "title": "Pipeline",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/ls-pipeline-detail"
+    },
+    {
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "title": "Node",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/ls-node-performance"
+    },
+    {
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "title": "Tuning",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/ls-pipeline-tuning"
+    },
+    {
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "title": "Host",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/ls-host-metrics"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 68,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "### Tuning Workflow\n\nAll suggestions are **guidelines** based on current metrics \u2014 adjust incrementally and observe.\n\n| System Health | Pipeline Suggestions | Action |\n|---|---|---|\n| All green | Differ from current | **Tune pipeline** \u2014 adjust workers, batch size, or delay |\n| CPU or heap red | Already match current | **Scale hardware** \u2014 add CPU cores or increase heap |\n| CPU or heap red | Also differ | **Tune pipeline first** (free), then reassess system health |\n| All green | All match current | **No changes needed** \u2014 system is balanced |",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 57,
+      "panels": [],
+      "title": "System Health",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "JVM heap usage for the Logstash process.\n\n\u2022 Green (< 60%): Healthy. Room to increase batch_size or add workers\n\u2022 Yellow (60\u201380%): Normal operating range. GC runs more often\n\u2022 Red (> 80%): GC pressure is high. Do NOT increase batch_size or workers without increasing -Xmx\n\u2022 If heap is red and Worker Utilization is high, increase JVM heap before adding workers\n\nNode-level metric \u2014 shared by all pipelines.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              },
+              {
+                "color": "#CCBB44",
+                "value": 60
+              },
+              {
+                "color": "#EE6677",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 9
+      },
+      "id": 54,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.node.stats.jvm.mem.heap_used_percent",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.node\" AND host.name: ($ls_node)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "JVM Heap",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Current JVM heap allocation (-Xmx).\n\nThis is the maximum heap Logstash can use. Compare with JVM Heap % to see how full it is, and with Suggested Heap to see if you need more.\n\nNode-level metric \u2014 shared by all pipelines.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#4477AA",
+            "mode": "fixed"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#4477AA",
+                "value": null
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 9
+      },
+      "id": 67,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.node.stats.jvm.mem.heap_max_in_bytes",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.node\" AND host.name: ($ls_node)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Total Heap",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Guideline for JVM heap size (-Xmx).\n\n\u2022 If current heap usage < 70%: no change needed, shows current -Xmx\n\u2022 If \u2265 70%: scales heap so current usage would be 60% of new max\n\u2022 Formula: heap_used_bytes / 0.60\n\nAfter changing -Xmx, restart Logstash. Set -Xms = -Xmx for best GC performance.\n\nNode-level metric \u2014 shared by all pipelines. This is a guideline, not a definitive value.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#228833",
+            "mode": "fixed"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 9
+      },
+      "id": 64,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "timeFrom": "5m",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "3",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.node.stats.jvm.mem.heap_used_in_bytes",
+              "hide": true,
+              "id": "1",
+              "type": "avg"
+            },
+            {
+              "field": "logstash.node.stats.jvm.mem.heap_max_in_bytes",
+              "hide": true,
+              "id": "2",
+              "type": "avg"
+            },
+            {
+              "id": "5",
+              "pipelineVariables": [
+                {
+                  "name": "used",
+                  "pipelineAgg": "1"
+                },
+                {
+                  "name": "max",
+                  "pipelineAgg": "2"
+                }
+              ],
+              "settings": {
+                "script": "params.max > 0 && (params.used / params.max) >= 0.70 ? params.used / 0.60 : params.max"
+              },
+              "type": "bucket_script"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.node\" AND host.name: ($ls_node)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Suggested Heap",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Number of CPU cores on the Logstash host.\n\nThis is the physical constraint for pipeline workers. Workers beyond this count will compete for CPU time.\n\nNode-level metric \u2014 shared by all pipelines.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#4477AA",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#4477AA",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 13
+      },
+      "id": 65,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "system.cpu.cores",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"system.cpu\" AND host.name: ($ls_node)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "CPU Cores",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Guideline for CPU cores based on actual system CPU utilization.\n\nFormula: ceil(cores \u00d7 system_cpu / 0.70)\n\n\u2022 Result \u2264 current cores: system has enough CPU\n\u2022 Result > current cores: system needs more CPU capacity\n\nBased on total system CPU (all processes), targeting 70% utilization. This is a guideline, not a definitive value.\n\nNode-level metric \u2014 shared by all pipelines.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#228833",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 13
+      },
+      "id": 66,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "timeFrom": "5m",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "system.cpu.total.norm.pct",
+              "hide": true,
+              "id": "1",
+              "type": "avg"
+            },
+            {
+              "field": "system.cpu.cores",
+              "hide": true,
+              "id": "2",
+              "type": "avg"
+            },
+            {
+              "id": "5",
+              "pipelineVariables": [
+                {
+                  "name": "cpu",
+                  "pipelineAgg": "1"
+                },
+                {
+                  "name": "cores",
+                  "pipelineAgg": "2"
+                }
+              ],
+              "settings": {
+                "script": "(long)Math.max(1, Math.ceil(params.cores * params.cpu / 0.70))"
+              },
+              "type": "bucket_script"
+            }
+          ],
+          "query": "data_stream.dataset: \"system.cpu\" AND host.name: ($ls_node)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Suggested Cores",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Total system CPU utilization (all processes, all cores).\n\n\u2022 Green (< 60%): CPU headroom exists. Safe to add workers\n\u2022 Yellow (60\u201380%): Getting busy. Suggested Cores may exceed current\n\u2022 Red (> 80%): CPU-bound. Suggested Cores will be higher than current\n\nThis is the same metric used by Suggested Cores (targeting 70%). When this is red and Suggested Cores > CPU Cores, scale hardware.\n\nNode-level metric \u2014 shared by all pipelines.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              },
+              {
+                "color": "#CCBB44",
+                "value": 60
+              },
+              {
+                "color": "#EE6677",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 13
+      },
+      "id": 56,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "system.cpu.total.norm.pct",
+              "id": "1",
+              "settings": {
+                "script": "_value * 100"
+              },
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"system.cpu\" AND host.name: ($ls_node)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "System CPU",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 50,
+      "panels": [],
+      "title": "Pipeline Config",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Current pipeline.workers setting.\n\n\u2022 Workers = parallel filter/output threads per pipeline\n\u2022 Max useful value = CPU cores on this host\n\u2022 If Worker Utilization is < 20%, reduce workers to free CPU\n\u2022 If Worker Utilization is > 80% and CPU has headroom, increase workers\n\u2022 More workers \u2192 more JVM heap pressure (each worker holds one batch in memory)\n\nSelect a single pipeline for accurate values. With multiple pipelines selected, values are averaged.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#4477AA",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#4477AA",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 18
+      },
+      "id": 51,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.info.workers",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Workers",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Guideline for worker count targeting 70% utilization.\n\nFormula: ceil(workers \u00d7 utilization / 70)\n\n\u2022 Result > current: workers are saturated, add more if CPU allows\n\u2022 Result < current: workers are underutilized, reduce to free CPU\n\u2022 Result = current: balanced, no change needed\n\nCheck System Health first \u2014 if Load/Core > 1.5 or CPU is red, address CPU before changing workers. These are guidelines, not definitive values.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#228833",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 22
+      },
+      "id": 61,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "timeFrom": "5m",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "3",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.info.workers",
+              "hide": true,
+              "id": "1",
+              "type": "avg"
+            },
+            {
+              "field": "logstash.pipeline.total.flow.worker_utilization.current",
+              "hide": true,
+              "id": "2",
+              "type": "avg"
+            },
+            {
+              "id": "5",
+              "pipelineVariables": [
+                {
+                  "name": "workers",
+                  "pipelineAgg": "1"
+                },
+                {
+                  "name": "util",
+                  "pipelineAgg": "2"
+                }
+              ],
+              "settings": {
+                "script": "(long)Math.max(1, Math.ceil(params.workers * params.util / 70.0))"
+              },
+              "type": "bucket_script"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Suggested Workers",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Current pipeline.batch_size setting (events per batch).\n\n\u2022 Default: 125. Increasing to 250\u2013500 can improve throughput if workers are underutilized\n\u2022 Larger batches = more events per worker cycle = better ES bulk efficiency\n\u2022 Trade-off: larger batches use more heap per worker (workers \u00d7 batch_size \u00d7 avg_event_size)\n\u2022 If JVM Heap is > 75%, do NOT increase batch_size without increasing heap\n\nSelect a single pipeline for accurate values. With multiple pipelines selected, values are averaged.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#4477AA",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#4477AA",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 18
+      },
+      "id": 52,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.info.batch_size",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Batch Size",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Guideline for batch size based on worker utilization.\n\n\u2022 Utilization > 70%: double batch size (max 1000) \u2014 workers are busy, larger batches improve bulk efficiency\n\u2022 Utilization < 20%: halve batch size (min 50) \u2014 workers are idle, smaller batches reduce memory waste\n\u2022 20\u201370%: no change, batch size is balanced\n\nCheck System Health first \u2014 if JVM Heap is red, do not increase batch size. These are guidelines, not definitive values.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#228833",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 22
+      },
+      "id": 62,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "timeFrom": "5m",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "3",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.info.batch_size",
+              "hide": true,
+              "id": "1",
+              "type": "avg"
+            },
+            {
+              "field": "logstash.pipeline.total.flow.worker_utilization.current",
+              "hide": true,
+              "id": "2",
+              "type": "avg"
+            },
+            {
+              "id": "5",
+              "pipelineVariables": [
+                {
+                  "name": "batch",
+                  "pipelineAgg": "1"
+                },
+                {
+                  "name": "util",
+                  "pipelineAgg": "2"
+                }
+              ],
+              "settings": {
+                "script": "params.util > 70 ? (long)Math.min(params.batch * 2, 1000) : (params.util < 20 ? (long)Math.max(params.batch / 2, 50) : (long)params.batch)"
+              },
+              "type": "bucket_script"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Suggested Batch Size",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Current pipeline.batch_delay setting (ms to wait for a batch to fill).\n\n\u2022 Default: 50ms. Controls how long a worker waits for batch_size events before processing a partial batch\n\u2022 If Worker Capacity is low (< 30%) and input is bursty, increase batch_delay to fill batches more completely\n\u2022 If latency matters, keep batch_delay low (25\u201350ms)\n\u2022 High-throughput pipelines with steady input: batch_delay barely matters since batches fill instantly\n\nSelect a single pipeline for accurate values. With multiple pipelines selected, values are averaged.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#4477AA",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#4477AA",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 18
+      },
+      "id": 53,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.info.batch_delay",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Batch Delay",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Guideline for batch delay based on queue backpressure.\n\n\u2022 Backpressure < 10%: increase to 100ms \u2014 queue is empty, longer wait fills batches better\n\u2022 Backpressure > 50%: decrease to 5ms \u2014 queue is backed up, process batches faster\n\u2022 10\u201350%: no change, batch delay is balanced\n\nThese are guidelines, not definitive values.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#228833",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 22
+      },
+      "id": 63,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "auto"
+      },
+      "timeFrom": "5m",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "3",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.info.batch_delay",
+              "hide": true,
+              "id": "1",
+              "type": "avg"
+            },
+            {
+              "field": "logstash.pipeline.total.flow.queue_backpressure.current",
+              "hide": true,
+              "id": "2",
+              "type": "avg"
+            },
+            {
+              "id": "5",
+              "pipelineVariables": [
+                {
+                  "name": "delay",
+                  "pipelineAgg": "1"
+                },
+                {
+                  "name": "bp",
+                  "pipelineAgg": "2"
+                }
+              ],
+              "settings": {
+                "script": "params.bp < 0.1 ? 100 : (params.bp > 0.5 ? 5 : (long)params.delay)"
+              },
+              "type": "bucket_script"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Suggested Batch Delay",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "id": 100,
+      "panels": [],
+      "title": "Worker Tuning",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Current worker utilization per pipeline. Below 20% means workers are mostly idle (reduce workers or increase input). Above 70% means workers are busy (good). Above 90% means workers are saturated (add workers or optimize filters).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "rgba(204, 187, 68, 0.1)",
+                "value": 20
+              },
+              {
+                "color": "rgba(238, 102, 119, 0.1)",
+                "value": 70
+              },
+              {
+                "color": "rgba(170, 51, 119, 0.1)",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.flow.worker_utilization.current",
+              "hide": false,
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Worker Utilization",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Fraction of worker capacity in use: worker_concurrency / configured_workers.\n\n\u2022 0.0 = all workers idle. 1.0 = all workers busy 100% of the time\n\u2022 Below 0.3: Pipeline is input-starved. Batches are arriving slowly. Consider increasing batch_delay to fill batches more, or reduce workers\n\u2022 0.3\u20130.7: Balanced. Workers have headroom for bursts\n\u2022 Above 0.7: Workers are heavily loaded. If you need more throughput, add workers (if CPU allows) or optimize filters",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "rgba(204, 187, 68, 0.08)",
+                "value": 0.3
+              },
+              {
+                "color": "rgba(238, 102, 119, 0.08)",
+                "value": 0.7
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "6",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "7",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.flow.worker_concurrency.current",
+              "hide": true,
+              "id": "1",
+              "type": "avg"
+            },
+            {
+              "field": "logstash.pipeline.info.workers",
+              "hide": true,
+              "id": "2",
+              "type": "avg"
+            },
+            {
+              "id": "5",
+              "pipelineVariables": [
+                {
+                  "name": "concurrency",
+                  "pipelineAgg": "1"
+                },
+                {
+                  "name": "workers",
+                  "pipelineAgg": "2"
+                }
+              ],
+              "settings": {
+                "script": "params.workers > 0 ? params.concurrency / params.workers : 0"
+              },
+              "type": "bucket_script"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Worker Capacity",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "id": 200,
+      "panels": [],
+      "title": "Pipeline Flow",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Ratio of output throughput to input throughput. Values near 1.0 mean Logstash outputs events at the same rate it receives them. Values below 1.0 indicate a bottleneck between input and output (filter processing, output backpressure).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              },
+              {
+                "color": "#CCBB44",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "6",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "7",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.flow.output_throughput.current",
+              "hide": true,
+              "id": "1",
+              "type": "avg"
+            },
+            {
+              "field": "logstash.pipeline.total.flow.input_throughput.current",
+              "hide": true,
+              "id": "2",
+              "type": "avg"
+            },
+            {
+              "id": "5",
+              "pipelineVariables": [
+                {
+                  "name": "out",
+                  "pipelineAgg": "1"
+                },
+                {
+                  "name": "inp",
+                  "pipelineAgg": "2"
+                }
+              ],
+              "settings": {
+                "script": "params.inp > 0 ? params.out / params.inp : 0"
+              },
+              "type": "bucket_script"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "ES Bulk Efficiency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Input and output throughput (events per second) from Logstash flow metrics. A growing gap between input and output indicates filter processing or output backpressure is creating a bottleneck. Uses pre-computed flow rates that handle restarts gracefully.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "Input eps",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.flow.input_throughput.current",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "Output eps",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "1",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.flow.output_throughput.current",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "B",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Pipeline Throughput",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 44
+      },
+      "id": 300,
+      "panels": [],
+      "title": "Queue Health",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${datasource}"
+      },
+      "description": "Time spent per event waiting to enter the queue. Calculated as derivative(queue_push_duration.ms) / derivative(events.in). Rising values indicate queue contention \u2014 the queue is full and producers are blocking.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{logstash.pipeline.name}}",
+          "bucketAggs": [
+            {
+              "field": "logstash.pipeline.name",
+              "id": "6",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "7",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${datasource}"
+          },
+          "metrics": [
+            {
+              "field": "logstash.pipeline.total.time.queue_push_duration.ms",
+              "hide": true,
+              "id": "1",
+              "type": "avg"
+            },
+            {
+              "field": "logstash.pipeline.total.events.in",
+              "hide": true,
+              "id": "3",
+              "type": "avg"
+            },
+            {
+              "hide": true,
+              "id": "2",
+              "pipelineAgg": "1",
+              "settings": {
+                "unit": "1s"
+              },
+              "type": "derivative"
+            },
+            {
+              "hide": true,
+              "id": "4",
+              "pipelineAgg": "3",
+              "settings": {
+                "unit": "1s"
+              },
+              "type": "derivative"
+            },
+            {
+              "id": "5",
+              "pipelineVariables": [
+                {
+                  "name": "time",
+                  "pipelineAgg": "2"
+                },
+                {
+                  "name": "count",
+                  "pipelineAgg": "4"
+                }
+              ],
+              "settings": {
+                "script": "params.count > 0 ? params.time / params.count : 0"
+              },
+              "type": "bucket_script"
+            }
+          ],
+          "query": "data_stream.dataset: \"logstash.pipeline\" AND host.name: ($ls_node) AND logstash.pipeline.name: ($ls_pipeline)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Queue Pressure",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "id": 400,
+      "panels": [],
+      "title": "ES Output Health",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${ds_es}"
+      },
+      "description": "Rate of write thread pool rejections per ES node. Rejections happen when Elasticsearch's write queue is full, causing Logstash bulk requests to fail and retry. Any sustained rejection rate indicates the ES cluster can't keep up with Logstash output.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 54
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{elasticsearch.node.name}}",
+          "bucketAggs": [
+            {
+              "field": "elasticsearch.node.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${ds_es}"
+          },
+          "metrics": [
+            {
+              "field": "elasticsearch.node.stats.thread_pool.write.rejected.count",
+              "hide": true,
+              "id": "1",
+              "type": "avg"
+            },
+            {
+              "id": "2",
+              "pipelineAgg": "1",
+              "settings": {
+                "unit": "1s"
+              },
+              "type": "derivative"
+            }
+          ],
+          "query": "data_stream.dataset: \"elasticsearch.stack_monitoring.node_stats\" AND elasticsearch.node.name: ($es_node)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Write Rejection Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${ds_es}"
+      },
+      "description": "Average time per indexing operation on each ES node. Calculated as rate(index_time_ms) / rate(index_total). High values indicate disk I/O pressure or cluster contention that will slow Logstash's ES output plugin.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#228833",
+                "value": null
+              },
+              {
+                "color": "#CCBB44",
+                "value": 50
+              },
+              {
+                "color": "#EE6677",
+                "value": 200
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 54
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "alias": "{{elasticsearch.node.name}}",
+          "bucketAggs": [
+            {
+              "field": "elasticsearch.node.name",
+              "id": "3",
+              "settings": {
+                "order": "desc",
+                "orderBy": "_key",
+                "size": "20"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "$interval",
+                "min_doc_count": "0",
+                "trimEdges": "1"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${ds_es}"
+          },
+          "metrics": [
+            {
+              "field": "elasticsearch.node.stats.indices.indexing.index_time.ms",
+              "hide": true,
+              "id": "1",
+              "type": "avg"
+            },
+            {
+              "field": "elasticsearch.node.stats.indices.indexing.index_total.count",
+              "hide": true,
+              "id": "5",
+              "type": "avg"
+            },
+            {
+              "id": "2",
+              "pipelineAgg": "1",
+              "settings": {
+                "unit": "1s"
+              },
+              "type": "derivative",
+              "hide": true
+            },
+            {
+              "id": "6",
+              "pipelineAgg": "5",
+              "settings": {
+                "unit": "1s"
+              },
+              "type": "derivative",
+              "hide": true
+            },
+            {
+              "id": "7",
+              "pipelineVariables": [
+                {
+                  "name": "time",
+                  "pipelineAgg": "2"
+                },
+                {
+                  "name": "count",
+                  "pipelineAgg": "6"
+                }
+              ],
+              "settings": {
+                "script": "params.count > 0 ? params.time / params.count : 0"
+              },
+              "type": "bucket_script"
+            }
+          ],
+          "query": "data_stream.dataset: \"elasticsearch.stack_monitoring.node_stats\" AND elasticsearch.node.name: ($es_node)",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Indexing Latency",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "logstash"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "elasticsearch",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "ES Data Source",
+        "multi": false,
+        "name": "ds_es",
+        "options": [],
+        "query": "elasticsearch",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allValue": "",
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "datasource": {
+          "type": "elasticsearch",
+          "uid": "${datasource}"
+        },
+        "definition": "{\"find\": \"terms\", \"field\": \"host.name\", \"query\": \"data_stream.dataset: logstash.*\"}",
+        "description": "Filter metrics by Logstash node",
+        "hide": 0,
+        "includeAll": false,
+        "label": "LS Node",
+        "multi": false,
+        "name": "ls_node",
+        "options": [],
+        "query": "{\"find\": \"terms\", \"field\": \"host.name\", \"query\": \"data_stream.dataset: logstash.*\"}",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "elasticsearch",
+          "uid": "${datasource}"
+        },
+        "definition": "{\"find\": \"terms\", \"field\": \"logstash.pipeline.name\", \"query\": \"data_stream.dataset: logstash.pipeline\"}",
+        "description": "Filter metrics by Logstash pipeline",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Pipeline",
+        "multi": false,
+        "name": "ls_pipeline",
+        "options": [],
+        "query": "{\"find\": \"terms\", \"field\": \"logstash.pipeline.name\", \"query\": \"data_stream.dataset: logstash.pipeline\"}",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": "",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "elasticsearch",
+          "uid": "${ds_es}"
+        },
+        "definition": "{\"find\": \"terms\", \"field\": \"elasticsearch.node.name\", \"query\": \"data_stream.dataset: elasticsearch.stack_monitoring.node_stats\"}",
+        "description": "Filter by Elasticsearch node",
+        "hide": 0,
+        "includeAll": true,
+        "label": "ES Node",
+        "multi": true,
+        "name": "es_node",
+        "options": [],
+        "query": "{\"find\": \"terms\", \"field\": \"elasticsearch.node.name\", \"query\": \"data_stream.dataset: elasticsearch.stack_monitoring.node_stats\"}",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": true,
+        "auto_count": 100,
+        "auto_min": "10s",
+        "current": {
+          "selected": false,
+          "text": "auto",
+          "value": "$__auto_interval_interval"
+        },
+        "description": "Aggregation interval for time series panels",
+        "hide": 2,
+        "label": "Interval",
+        "name": "interval",
+        "options": [
+          {
+            "selected": true,
+            "text": "auto",
+            "value": "$__auto_interval_interval"
+          },
+          {
+            "selected": false,
+            "text": "10s",
+            "value": "10s"
+          },
+          {
+            "selected": false,
+            "text": "30s",
+            "value": "30s"
+          },
+          {
+            "selected": false,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": false,
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "selected": false,
+            "text": "10m",
+            "value": "10m"
+          },
+          {
+            "selected": false,
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
+          }
+        ],
+        "query": "10s,30s,1m,5m,10m,30m,1h",
+        "queryValue": "",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "type": "interval"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "LS-04 Pipeline Tuning",
+  "uid": "ls-pipeline-tuning",
+  "__inputs": [
+    {
+      "name": "DS_DATASOURCE",
+      "label": "Data Source",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "elasticsearch",
+      "pluginName": "Elasticsearch"
+    },
+    {
+      "name": "DS_DS_ES",
+      "label": "ES Data Source",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "elasticsearch",
+      "pluginName": "Elasticsearch"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "12.3.2"
+    }
+  ]
+}
